@@ -2,8 +2,8 @@
 
 A web-based tool to scan large batches of PDF files for specific text — in the footer, header, body content, or the full document. Built to handle both scanned (image-based) and text-based PDFs, with OCR support for Hindi and English.
 
-**Live Demo (Frontend):** https://smart-pdf-zone-scanner.vercel.app  
-**Backend API:** https://smart-pdf-zone-scanner.onrender.com/api/health  
+**Live Demo (Frontend):** https://smart-pdf-zone-scanner.vercel.app/ 
+**Backend API:** https://smart-pdf-zone-scanner.onrender.com/ 
 **GitHub:** https://github.com/Multi-meta/Smart_PDF_Zone_Scanner
 
 ---
