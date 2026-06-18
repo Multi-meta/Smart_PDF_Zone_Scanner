@@ -1,102 +1,115 @@
-# 📄 PDF Footer Scanner
+# PDF Zone Scanner
 
-> Scan hundreds of PDFs for any text — in footer, header, body, or the entire document. Supports Hindi (हिन्दी) and English OCR.
+A web-based tool to scan large batches of PDF files for specific text — in the footer, header, body content, or the full document. Built to handle both scanned (image-based) and text-based PDFs, with OCR support for Hindi and English.
+
+**Live Demo:** `https://YOUR-VERCEL-URL.vercel.app` <!-- Replace after Vercel deployment -->  
+**API (Backend):** `https://YOUR-RENDER-URL.onrender.com/api/health` <!-- Replace after Render deployment -->  
+**GitHub:** https://github.com/Multi-meta/Smart_PDF_Zone_Scanner
 
 ---
 
-## 🚀 Quick Start (Windows)
+## What it does
 
-### Option A — One command (recommended)
+- Upload hundreds of PDFs at once (or an entire folder)
+- Search for any text string in a specific zone: footer, header, content area, or the entire document
+- Handles both text-based PDFs and scanned/image-based PDFs via OCR
+- Supports Hindi (Devanagari) and English text recognition
+- Exports results as a CSV file for further analysis
+
+---
+
+## Quick Start (Windows)
+
+Clone the repo and run the setup script. It handles everything automatically.
+
 ```powershell
-git clone https://github.com/YOUR_USERNAME/AnyType_PDF_Footer_Scanner.git
-cd AnyType_PDF_Footer_Scanner
+git clone https://github.com/Multi-meta/Smart_PDF_Zone_Scanner.git
+cd Smart_PDF_Zone_Scanner
 npm run setup:windows
 npm start
 ```
-Open **http://localhost:3000** in your browser.
 
-### Option B — With auto-install of system tools
+Open `http://localhost:3000` in your browser.
+
+**To also install system tools (Tesseract, Poppler, Python) automatically:**
 ```powershell
 npm run setup:windows:install
 ```
-This also installs Tesseract, Poppler, and Python via **winget** if they are missing.
 
-### Option C — PowerShell directly
+Or run the PowerShell script directly:
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\setup-windows.ps1
-# or with tool installation:
 powershell -ExecutionPolicy Bypass -File .\scripts\setup-windows.ps1 -InstallTools
 ```
 
 ---
 
-## 🛠️ What the Setup Script Does
+## What the setup script does
 
-| Step | Action |
-|------|--------|
-| 1 | Checks Node.js (≥16) |
-| 2 | Checks Python 3.8+ and installs `pypdf`, `Pillow` |
-| 3 | Checks Poppler (`pdfinfo`, `pdftoppm`, `pdftotext`) |
-| 4 | Checks Tesseract OCR with Hindi language data |
-| 5 | Runs `npm install` |
-| 6 | Creates `.env` from `.env.example` |
-| 7 | Creates `uploads/`, `results/`, `uploads/ocr-temp/` directories |
+1. Checks for Node.js (v16+)
+2. Checks for Python 3.8+ and installs `pypdf` and `Pillow`
+3. Checks for Poppler utilities (`pdfinfo`, `pdftoppm`, `pdftotext`)
+4. Checks for Tesseract OCR with Hindi language data
+5. Runs `npm install`
+6. Creates `.env` from `.env.example`
+7. Creates the required `uploads/`, `results/`, and `uploads/ocr-temp/` directories
 
 ---
 
-## 📋 Prerequisites (Manual Install)
+## Prerequisites
 
-If you prefer installing tools yourself:
+If you prefer to install tools manually:
 
-| Tool | Required | Download |
-|------|----------|----------|
-| **Node.js 16+** | ✅ Yes | https://nodejs.org/ |
-| **Python 3.8+** | ✅ Yes | https://www.python.org/downloads/ |
-| **pypdf + Pillow** | ✅ Yes | `pip install pypdf Pillow` |
-| **Poppler** | ⚠️ Recommended | https://github.com/oschwartz10612/poppler-windows/releases/ |
-| **Tesseract OCR** | ⚠️ Recommended | https://github.com/UB-Mannheim/tesseract/wiki |
-| **Tesseract hin data** | For Hindi | https://github.com/tesseract-ocr/tessdata/raw/main/hin.traineddata |
+| Tool | Required | Where to get it |
+|------|----------|-----------------|
+| Node.js 16+ | Yes | https://nodejs.org/ |
+| Python 3.8+ | Yes | https://www.python.org/downloads/ |
+| pypdf + Pillow | Yes | `pip install pypdf Pillow` |
+| Poppler | Recommended | https://github.com/oschwartz10612/poppler-windows/releases/ |
+| Tesseract OCR | Recommended | https://github.com/UB-Mannheim/tesseract/wiki |
+| Tesseract Hindi data | For Hindi OCR | https://github.com/tesseract-ocr/tessdata/raw/main/hin.traineddata |
 
-> **Note:** Poppler and Tesseract must be added to your system **PATH**. The app falls back to pdf2pic/tesseract.js if they are missing (slower, English only).
+> Poppler and Tesseract need to be added to your system PATH after installation.
+> The app falls back to `pdf2pic` and `tesseract.js` if they are not found, but performance will be slower and Hindi OCR will not be available.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-AnyType_PDF_Footer_Scanner/
+Smart_PDF_Zone_Scanner/
 ├── scripts/
-│   ├── setup-windows.ps1       ← Windows one-click installer
-│   └── build-frontend-config.js← Injects production API URL
+│   ├── setup-windows.ps1          Windows one-click installer
+│   └── build-frontend-config.js   Injects the Render API URL for production builds
 ├── src/
 │   ├── middleware/
-│   │   └── upload.js           ← Multer file upload config
+│   │   └── upload.js              Multer file upload configuration
 │   ├── routes/
-│   │   ├── scan.js             ← POST /api/scan handler
-│   │   └── health.js           ← GET /api/health handler
+│   │   ├── scan.js                POST /api/scan handler
+│   │   └── health.js              GET /api/health handler
 │   └── utils/
-│       ├── scanner.js          ← Core PDF scanning logic
-│       ├── extract_last_page_image.py ← Python PDF → image extractor
-│       └── resultsStore.js     ← CSV results writer
-├── public/                     ← Frontend (deployed to Vercel)
+│       ├── scanner.js             Core PDF scanning and OCR logic
+│       ├── extract_last_page_image.py   Python script for PDF-to-image extraction
+│       └── resultsStore.js        Writes scan results to CSV
+├── public/                        Frontend — deployed separately to Vercel
 │   ├── index.html
 │   ├── css/style.css
 │   └── js/
-│       ├── config.js           ← API URL config (generated)
-│       └── app.js              ← Frontend logic
-├── .env.example                ← Environment variables template
-├── Dockerfile                  ← Production Docker image (for Render)
-├── render.yaml                 ← Render deployment config
-├── vercel.json                 ← Vercel deployment config
-├── requirements.txt            ← Python dependencies
+│       ├── config.js              API base URL (local vs production)
+│       └── app.js                 Frontend logic
+├── .env.example                   Environment variable template
+├── Dockerfile                     Production Docker image for Render
+├── render.yaml                    Render deployment configuration
+├── vercel.json                    Vercel deployment configuration
+├── requirements.txt               Python dependencies
 └── package.json
 ```
 
 ---
 
-## ⚙️ Environment Variables
+## Environment Variables
 
-Copy `.env.example` to `.env` and configure:
+Copy `.env.example` to `.env` before running locally:
 
 ```env
 PORT=3000
@@ -106,89 +119,94 @@ PDF_FOOTER_SCANNER_PYTHON=
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PORT` | `3000` | Port for the Express server |
-| `FRONTEND_URL` | `http://localhost:3000` | Allowed CORS origin (set to your Vercel URL in production) |
-| `PDF_FOOTER_SCANNER_PYTHON` | _(auto-detect)_ | Path to Python 3 executable |
+| `PORT` | `3000` | Port the Express server listens on |
+| `FRONTEND_URL` | `http://localhost:3000` | CORS allowed origin — set to your Vercel URL in production |
+| `PDF_FOOTER_SCANNER_PYTHON` | auto-detect | Full path to the Python 3 executable if auto-detection fails |
 
 ---
 
-## 🌐 Deployment
+## Deployment
 
-This project is split for deployment:
-- **Frontend** (static HTML/CSS/JS in `public/`) → **Vercel**
-- **Backend** (Node.js API + Python OCR) → **Render** (Docker)
+The project is split across two platforms:
 
-### Step 1 — Deploy Backend to Render
+- **Frontend** — static files in `public/` → deployed to Vercel
+- **Backend** — Node.js API + Python OCR → deployed to Render via Docker
 
-1. Push your code to GitHub
-2. Go to [render.com](https://render.com) → **New → Web Service**
-3. Connect your GitHub repo
-4. Render detects `render.yaml` and `Dockerfile` automatically
-5. Click **Deploy**
-6. After deployment, copy your service URL: `https://YOUR-APP.onrender.com`
-7. In Render dashboard → **Environment** → Set `FRONTEND_URL` to your Vercel URL (after Step 2)
+### 1. Deploy the backend to Render
 
-### Step 2 — Set the API URL in the Frontend
+1. Push the code to GitHub
+2. Go to [render.com](https://render.com) → New → Web Service
+3. Connect your GitHub repository
+4. Render will detect the `Dockerfile` automatically — select Docker as the runtime
+5. Click Deploy and wait for the build to finish (first build takes 5–10 minutes)
+6. Copy your service URL: `https://your-app.onrender.com`
 
-After you have your Render URL, run:
-```bash
-RENDER_URL=https://YOUR-APP.onrender.com node scripts/build-frontend-config.js
+### 2. Set the API URL for the frontend
+
+Once you have your Render URL, run:
+
+```powershell
+$env:RENDER_URL="https://your-app.onrender.com"
+node scripts/build-frontend-config.js
 ```
-This updates `public/js/config.js` with your Render URL. Commit and push this change.
 
-### Step 3 — Deploy Frontend to Vercel
+This updates `public/js/config.js` with the production backend URL. Commit and push the change.
 
-1. Go to [vercel.com](https://vercel.com) → **New Project**
-2. Import your GitHub repo
-3. Vercel detects `vercel.json` automatically — it serves only the `public/` folder
-4. Click **Deploy**
-5. Copy your Vercel URL: `https://YOUR-APP.vercel.app`
-6. Back in Render: set `FRONTEND_URL` = `https://YOUR-APP.vercel.app`
+### 3. Deploy the frontend to Vercel
 
-### Step 4 — Final Check
+1. Go to [vercel.com](https://vercel.com) → New Project → Import your GitHub repo
+2. Set the **Output Directory** to `public`
+3. Leave the build command blank (static site — no build step needed)
+4. Set Framework Preset to **Other**
+5. Click Deploy
+6. Copy your Vercel URL: `https://your-app.vercel.app`
 
-Visit your Vercel URL → upload a PDF → click Scan. The frontend calls your Render backend.
+### 4. Connect frontend and backend
+
+In the Render dashboard, go to Environment and set:
+
+```
+FRONTEND_URL = https://your-app.vercel.app
+```
+
+Save — Render will redeploy automatically. Your frontend and backend are now connected.
 
 ---
 
-## 🔍 Usage
+## Usage
 
 1. Open the app in your browser
-2. Enter the text to search for (English or Hindi हिन्दी)
-3. Choose the search zone:
-   - **Footer** — last page, bottom 2 inches
-   - **Header** — first page, top 5 inches
-   - **Content** — all pages, body area
-   - **Entire PDF** — all pages, full text
-4. Drag-drop PDFs or select a folder
-5. Click **🔍 Scan PDFs**
-6. Download the CSV results
+2. Type the text you want to search for (English or Hindi)
+3. Select the search zone — Footer, Header, Content, or Entire PDF
+4. Upload PDF files or select a folder
+5. Click Scan PDFs
+6. Download the CSV results when the scan finishes
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
-**`pdftotext: command not found`**
-→ Install Poppler and add `bin\` to PATH. See Prerequisites table.
+**`pdftotext: command not found`**  
+Install Poppler and add its `bin\` folder to your system PATH.
 
-**OCR misses Hindi text**
-→ Ensure `tesseract-ocr-hin` / `hin.traineddata` is installed.
+**OCR not picking up Hindi text**  
+Make sure `hin.traineddata` is placed in your Tesseract `tessdata` directory.
 
-**Port 3000 already in use**
-→ Set `PORT=3001` in your `.env` file.
+**Port 3000 already in use**  
+Set `PORT=3001` in your `.env` file.
 
-**Python packages missing**
-→ Run: `pip install pypdf Pillow`
+**Python packages not found**  
+Run `pip install pypdf Pillow` manually.
 
-**Render app sleeps (free tier)**
-→ Upgrade to Render's paid tier or use a keep-alive service. The free tier sleeps after 15 minutes of inactivity.
+**App is slow to respond on Render (free tier)**  
+The free tier sleeps after 15 minutes of inactivity. The first request after a sleep takes around 30 seconds to wake up. Upgrade to a paid plan for always-on availability.
 
 ---
 
-## 📄 License
+## License
 
 MIT — see [LICENSE](LICENSE)
 
 ---
 
-Built with ❤️ using Node.js, Express, Python, Tesseract OCR & Poppler
+Built by **Utkarsh Yuvraj** — [utkarshyuvraj16@gmail.com](mailto:utkarshyuvraj16@gmail.com)
