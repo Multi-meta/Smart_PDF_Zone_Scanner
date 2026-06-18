@@ -1,5 +1,5 @@
 # =============================================================================
-# PDF Footer Scanner — Windows Setup Script
+# PDF Zone Scanner - Windows Setup Script
 # =============================================================================
 # Usage:
 #   npm run setup:windows
@@ -17,19 +17,18 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$Host.UI.RawUI.WindowTitle = "PDF Footer Scanner — Setup"
 
 # ── Colours ──────────────────────────────────────────────────────────────────
-function Write-Step   { param($msg) Write-Host "`n  🔷 $msg" -ForegroundColor Cyan }
-function Write-Ok     { param($msg) Write-Host "  ✅ $msg" -ForegroundColor Green }
-function Write-Warn   { param($msg) Write-Host "  ⚠️  $msg" -ForegroundColor Yellow }
-function Write-Fail   { param($msg) Write-Host "  ❌ $msg" -ForegroundColor Red }
-function Write-Info   { param($msg) Write-Host "     $msg" -ForegroundColor Gray }
+function Write-Step { param($msg) Write-Host "`n  >> $msg" -ForegroundColor Cyan }
+function Write-Ok   { param($msg) Write-Host "  [OK]   $msg" -ForegroundColor Green }
+function Write-Warn { param($msg) Write-Host "  [WARN] $msg" -ForegroundColor Yellow }
+function Write-Fail { param($msg) Write-Host "  [FAIL] $msg" -ForegroundColor Red }
+function Write-Info { param($msg) Write-Host "         $msg" -ForegroundColor Gray }
 
 Write-Host ""
-Write-Host "  ╔══════════════════════════════════════════════════╗" -ForegroundColor Blue
-Write-Host "  ║       PDF Footer Scanner — Windows Setup         ║" -ForegroundColor Blue
-Write-Host "  ╚══════════════════════════════════════════════════╝" -ForegroundColor Blue
+Write-Host "  =================================================" -ForegroundColor Blue
+Write-Host "       PDF Zone Scanner - Windows Setup            " -ForegroundColor Blue
+Write-Host "  =================================================" -ForegroundColor Blue
 Write-Host ""
 
 # ── Helper: check if a command exists ────────────────────────────────────────
@@ -50,9 +49,9 @@ function Install-WithWinget {
     return $true
 }
 
-# ═════════════════════════════════════════════════════════════════════════════
-# STEP 1 — Node.js
-# ═════════════════════════════════════════════════════════════════════════════
+# =============================================================================
+# STEP 1 - Node.js
+# =============================================================================
 Write-Step "Checking Node.js..."
 if (Test-Command "node") {
     $nodeVersion = (node --version 2>&1)
@@ -69,19 +68,21 @@ if (Test-Command "node") {
     exit 1
 }
 
-# ═════════════════════════════════════════════════════════════════════════════
-# STEP 2 — Python
-# ═════════════════════════════════════════════════════════════════════════════
+# =============================================================================
+# STEP 2 - Python
+# =============================================================================
 Write-Step "Checking Python..."
 $pythonCmd = $null
 foreach ($cmd in @("python", "python3", "py")) {
     if (Test-Command $cmd) {
-        $ver = (& $cmd --version 2>&1) -replace "Python ", ""
-        if ([version]$ver -ge [version]"3.8") {
-            $pythonCmd = $cmd
-            Write-Ok "Python found: $cmd $ver"
-            break
-        }
+        try {
+            $verStr = (& $cmd --version 2>&1) -replace "Python ", ""
+            if ([version]$verStr -ge [version]"3.8") {
+                $pythonCmd = $cmd
+                Write-Ok "Python found: $cmd $verStr"
+                break
+            }
+        } catch { }
     }
 }
 
@@ -110,9 +111,9 @@ if ($pythonCmd) {
     }
 }
 
-# ═════════════════════════════════════════════════════════════════════════════
-# STEP 3 — Poppler (pdfinfo, pdftoppm, pdftotext)
-# ═════════════════════════════════════════════════════════════════════════════
+# =============================================================================
+# STEP 3 - Poppler (pdfinfo, pdftoppm, pdftotext)
+# =============================================================================
 Write-Step "Checking Poppler utilities (pdfinfo, pdftoppm, pdftotext)..."
 if (Test-Command "pdfinfo") {
     Write-Ok "Poppler found in PATH."
@@ -123,29 +124,23 @@ if (Test-Command "pdfinfo") {
         try {
             Install-WithWinget "oschwartz10612.poppler" "Poppler for Windows"
             Write-Warn "You may need to add Poppler bin\ to your PATH manually."
-            Write-Info "See: https://github.com/oschwartz10612/poppler-windows/releases/"
         } catch {
             Write-Warn "Auto-install failed. Download manually."
-            Write-Info "Download: https://github.com/oschwartz10612/poppler-windows/releases/"
-            Write-Info "Extract and add the bin\ folder to your system PATH."
         }
-    } else {
-        Write-Info "Download: https://github.com/oschwartz10612/poppler-windows/releases/"
-        Write-Info "Extract and add the bin\ folder to your system PATH."
-        Write-Info "Re-run with -InstallTools flag to attempt auto-install."
     }
-    Write-Info "The app will fall back to pdf2pic (slower) if Poppler is missing."
+    Write-Info "Download: https://github.com/oschwartz10612/poppler-windows/releases/"
+    Write-Info "Extract and add the bin\ folder to your system PATH."
+    Write-Info "App will fall back to pdf2pic (slower) if Poppler is missing."
 }
 
-# ═════════════════════════════════════════════════════════════════════════════
-# STEP 4 — Tesseract OCR
-# ═════════════════════════════════════════════════════════════════════════════
+# =============================================================================
+# STEP 4 - Tesseract OCR
+# =============================================================================
 Write-Step "Checking Tesseract OCR..."
 if (Test-Command "tesseract") {
     $tesseractVer = (tesseract --version 2>&1 | Select-String "tesseract").ToString().Trim()
     Write-Ok "Tesseract found: $tesseractVer"
 
-    # Check for Hindi language data
     $langs = (tesseract --list-langs 2>&1) -join " "
     if ($langs -match "hin") {
         Write-Ok "Hindi (hin) language data available."
@@ -170,9 +165,9 @@ if (Test-Command "tesseract") {
     Write-Info "App will fall back to tesseract.js (slower, no Hindi) if not found."
 }
 
-# ═════════════════════════════════════════════════════════════════════════════
-# STEP 5 — Node.js dependencies (npm install)
-# ═════════════════════════════════════════════════════════════════════════════
+# =============================================================================
+# STEP 5 - npm install
+# =============================================================================
 Write-Step "Installing Node.js dependencies..."
 try {
     npm install --silent
@@ -182,11 +177,11 @@ try {
     exit 1
 }
 
-# ═════════════════════════════════════════════════════════════════════════════
-# STEP 6 — Create .env from .env.example if missing
-# ═════════════════════════════════════════════════════════════════════════════
+# =============================================================================
+# STEP 6 - Create .env from .env.example if missing
+# =============================================================================
 Write-Step "Setting up environment file..."
-$envFile = ".\.env"
+$envFile    = ".\.env"
 $envExample = ".\.env.example"
 
 if (-not (Test-Path $envFile)) {
@@ -196,20 +191,16 @@ if (-not (Test-Path $envFile)) {
         Write-Info "Edit .env to set your FRONTEND_URL when deploying."
     } else {
         Write-Warn ".env.example not found. Creating minimal .env..."
-        @"
-PORT=3000
-FRONTEND_URL=http://localhost:3000
-PDF_FOOTER_SCANNER_PYTHON=
-"@ | Set-Content $envFile -Encoding UTF8
+        Set-Content $envFile "PORT=3000`nFRONTEND_URL=http://localhost:3000`nPDF_FOOTER_SCANNER_PYTHON=" -Encoding UTF8
         Write-Ok ".env created."
     }
 } else {
-    Write-Ok ".env already exists — skipped."
+    Write-Info ".env already exists - skipped."
 }
 
-# ═════════════════════════════════════════════════════════════════════════════
-# STEP 7 — Ensure required directories exist
-# ═════════════════════════════════════════════════════════════════════════════
+# =============================================================================
+# STEP 7 - Ensure required directories exist
+# =============================================================================
 Write-Step "Creating required directories..."
 foreach ($dir in @("uploads", "results", "uploads\ocr-temp")) {
     if (-not (Test-Path $dir)) {
@@ -220,13 +211,13 @@ foreach ($dir in @("uploads", "results", "uploads\ocr-temp")) {
     }
 }
 
-# ═════════════════════════════════════════════════════════════════════════════
+# =============================================================================
 # DONE
-# ═════════════════════════════════════════════════════════════════════════════
+# =============================================================================
 Write-Host ""
-Write-Host "  ╔══════════════════════════════════════════════════╗" -ForegroundColor Green
-Write-Host "  ║            ✅  Setup Complete!                   ║" -ForegroundColor Green
-Write-Host "  ╚══════════════════════════════════════════════════╝" -ForegroundColor Green
+Write-Host "  =================================================" -ForegroundColor Green
+Write-Host "              Setup Complete!                      " -ForegroundColor Green
+Write-Host "  =================================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "  To start the app, run:" -ForegroundColor White
 Write-Host "    npm start" -ForegroundColor Yellow
