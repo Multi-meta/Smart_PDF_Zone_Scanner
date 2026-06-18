@@ -6,7 +6,8 @@ services:
     name: pdf-footer-scanner-api
     runtime: docker
     dockerfilePath: ./Dockerfile
-    # Render's free tier auto-sleeps after inactivity — upgrade for production
+    # Free tier auto-sleeps after 15 min of inactivity.
+    # Upgrade to 'starter' plan for always-on.
     plan: free
     region: oregon
 
@@ -14,21 +15,12 @@ services:
       - key: NODE_ENV
         value: production
 
-      - key: PORT
-        value: 10000
-
       # Set this to your Vercel frontend URL after deploying the frontend.
       # Example: https://your-app.vercel.app
       # This controls the CORS allowed origin.
       - key: FRONTEND_URL
         sync: false   # you set this manually in Render dashboard
 
-      # Optional: override Python path (defaults to python3 in Docker)
+      # Python path inside the Docker container (python3 is pre-installed)
       - key: PDF_FOOTER_SCANNER_PYTHON
         value: python3
-
-    # Persistent disk so scan results survive restarts
-    disk:
-      name: scan-results
-      mountPath: /app/results
-      sizeGB: 1
